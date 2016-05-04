@@ -1,0 +1,22 @@
+# configuration
+global
+    log 127.0.0.1 local0 notice
+
+defaults
+    log global
+    retries 2
+    timeout connect ${TIMEOUT_CONNECT:-3000}
+    timeout server  ${TIMEOUT_SERVER:-5000}
+    timeout client  ${TIMEOUT_CLIENT:-5000}
+
+${STATS_CONFIG}
+	
+listen mysql-cluster
+    bind 0.0.0.0:3306
+    mode tcp
+    option mysql-check ${MYSQLCHECK}
+    balance roundrobin
+${DB_NODES_LIST}
+ 
+ 
+    

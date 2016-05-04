@@ -1,0 +1,16 @@
+haproxy:
+# image: alessandrob/rds-ha-proxy
+  build: haproxy
+  environment:
+    - CLUSTER_ID
+    - DB_NODES
+    - MYSQLCHECK
+    - ENABLE_STATS
+    - TIMEOUT_CONNECT
+    - TIMEOUT_SERVER
+    - TIMEOUT_CLIENT
+    
+  ports:
+    - 3306:3306
+    - 8080:8080
+  

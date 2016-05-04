@@ -1,0 +1,48 @@
+#!/bin/sh
+
+if [ -z "${CLUSTER_ID}" ] && [ -z "${DB_NODES}" ]
+then 
+	echo "Please define a valid cluster identifier as environment variable CLUSTER_ID, or a set of nodes as DB_NODES"
+	exit 1
+fi
+
+if [ -n "${CLUSTER_ID}" ]
+then
+	# determine if running on AWS
+	EC2_INSTANCE_ID="$(curl -s -m 1 http://169.254.169.254/latest/meta-data/instance-id)"
+	if [ -n "${EC2_INSTANCE_ID}" ]
+	then
+		# running on AWS, we will determine the end points 
+		EC2_AVAIL_ZONE="$(curl -s -m 1 http://169.254.169.254/latest/meta-data/placement/availability-zone)"
+		EC2_REGION="$(echo "$EC2_AVAIL_ZONE" | sed 's/[a-z]$//g')"
+		DB_NODES=$(aws rds describe-db-instances --region ${EC2_REGION} --output text --query \
+			"DBInstances[?DBClusterIdentifier==\`${CLUSTER_ID}\` && DBInstanceStatus==\`available\`].Endpoint[].Address"\
+		)
+		count=0 
+	else
+		echo "CLUSTER_ID was provided but not running on AWS, exiting"
+		exit 1
+	fi
+fi
+if [ -z "${DB_NODES}" ]
+then
+	echo "No nodes have been discovered or specified, exiting"
+	exit 1
+fi
+
+DB_NODES_LIST=$(for node in $DB_NODES; do echo "server node-$count ${node}:3306 check"; count=$((count+1)); done)
+if [ -n "${MYSQLCHECK}" ]
+then 
+	MYSQLCHECK="user ${MYSQLCHECK}"
+fi
+if [ -n "${ENABLE_STATS}" ]
+then
+STATS_CONFIG=$(cat << EOF
+listen stats
+	bind 0.0.0.0:8080
+	mode http
+	stats enable
+	stats uri /stats
+EOF)
+fi
+echo "$(eval "echo \"$(sed 's/\"/\\\"/g' /usr/local/etc/haproxy/haproxy.template)\"")" | tee  /usr/local/etc/haproxy/haproxy.cfg
