@@ -15,8 +15,10 @@ docker-machine create local --driver virtualbox
 Once completed, just run 
 ```bash
 eval $(docker-machine env local)
-``` to be able to access the docker daemon running on your docker machine and then
+``` 
+to be able to access the docker daemon running on your docker machine and then
 ```bash
 ENABLE_STATS=true DB_NODES="db1.example.com db2.example.com" docker-compose up -d && docker-compose logs
-``` where `DB_NODES` is a space separate list of MySQL servers listening on port 3306
+``` 
+where `DB_NODES` is a space separate list of MySQL servers listening on port 3306
 
