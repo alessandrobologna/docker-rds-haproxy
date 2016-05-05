@@ -21,4 +21,4 @@ to be able to access the docker daemon running on your docker machine and then
 ENABLE_STATS=true DB_NODES="db1.example.com db2.example.com" docker-compose up -d && docker-compose logs
 ``` 
 where `DB_NODES` is a space separate list of MySQL servers listening on port 3306
-
+You can check the status of haproxy if you run `open http://$(docker-machine ip local):8080/stats` and connect to your mysql databases with `mysql -h $(docker-machine ip local)`
