@@ -37,3 +37,4 @@ Please note that docker machine will create a new security group (called `docker
 ENABLE_STATS=true CLUSTER_ID="your-rds-cluster" docker-compose up -d && docker-compose logs
 ```
 to start your containers and then `mysql -h $(docker-machine ip ec2-haproxy)` to connect to your cluster. The round robin policy will make so that each connection will be to a different node in your cluster.
+
