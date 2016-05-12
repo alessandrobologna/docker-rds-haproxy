@@ -15,9 +15,10 @@ then
 		# running on AWS, we will determine the end points 
 		EC2_AVAIL_ZONE="$(curl -s -m 1 http://169.254.169.254/latest/meta-data/placement/availability-zone)"
 		EC2_REGION="$(echo "$EC2_AVAIL_ZONE" | sed 's/[a-z]$//g')"
-		DB_NODES=$(aws rds describe-db-instances --region ${EC2_REGION} --output text --query \
-			"DBInstances[?DBClusterIdentifier==\`${CLUSTER_ID}\` && DBInstanceStatus==\`available\`].Endpoint[].Address"\
-		)
+		
+		#get the nodes
+		DB_NODES=$(aws rds describe-db-instances --region ${EC2_REGION} --output text | grep ENDPOINT | grep ${CLUSTER_ID} | awk '{print $2}')
+
 		count=0 
 	else
 		echo "CLUSTER_ID was provided but not running on AWS, exiting"
@@ -45,4 +46,4 @@ listen stats
 	stats uri /stats
 EOF)
 fi
-echo "$(eval "echo \"$(sed 's/\"/\\\"/g' /usr/local/etc/haproxy/haproxy.template)\"")" | tee  /usr/local/etc/haproxy/haproxy.cfg
+echo "$(eval "echo \"$(sed 's/\"/\\\"/g' /etc/haproxy/haproxy.template)\"")" | tee  /etc/haproxy/haproxy.cfg
